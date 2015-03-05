@@ -1,0 +1,148 @@
+//http://learningaboutelectronics.com/Articles/Arduino-ohmmeter.php
+
+//http://playground.arduino.cc/Code/Timer1
+
+#include "TimerOne.h"
+//#include "TimerObject.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
+#define BLINK_PIN  31
+
+void on_setup(){
+  pinMode(BLINK_PIN, OUTPUT);
+}
+
+//This will set the state of the LED to On (true) or Off(false)
+void setLEDState(bool state){
+  digitalWrite(BLINK_PIN, state?1:0);
+}
+
+//this will publish the value of the restistor
+float publishResistorValue(){
+	int analogPin= 0;
+	int raw= 0;
+	int Vin= 5;
+	float Vout= 0;
+	float R1= 100000;
+	float R2= 0;
+	float buffer= 0;
+  raw= analogRead(analogPin);
+
+  if(raw) {
+    buffer= raw * Vin;
+    Vout= (buffer)/1024.0;
+    buffer= (Vin/Vout) -1;
+    R2= R1 * buffer;
+  }
+  return R2;
+}
+
+//--------------------
+//Generated
+String inputString = "";         // a string to hold incoming data
+boolean stringComplete = false;  // whether the string is complete
+
+
+//Set IDs
+const int id_setLEDState = 0;
+const int id_publishResistorValue = 1;
+
+//Callbacks
+
+// No calllback for setLEDstate
+
+void callback_publishResistorValue(){
+	float val =  publishResistorValue();
+	Serial.print(id_publishResistorValue);
+	Serial.print(":");
+	Serial.println(val);
+}
+
+void register_publishResitorValue(long frequency)
+{
+
+  Timer1.initialize(frequency);         // initialize timer1, 500k is 1/2 second period
+  Timer1.attachInterrupt(callback_publishResistorValue);  // attaches callback() as a timer overflow interrupt
+}
+
+
+void setup(){
+
+	on_setup();
+	Serial.begin(9600);	
+
+        inputString.reserve(200);
+
+	//setup_setLEDState does not exist
+	//setup_publishResitorValue();
+}
+
+
+
+
+
+void serialEvent() {
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    
+    Serial.print("STR::");Serial.println(inputString);	
+    // if the incoming character is a newline, set a flag
+    // so the main loop can do something about it:
+    if (inChar == '\n') {
+      Serial.println("New line");
+      stringComplete = true;
+    }
+  }
+}
+
+
+
+void loop()
+{    
+    if(stringComplete == true){
+      String tmp = inputString;
+      inputString = "";
+      inputString.reserve(200);
+      stringComplete = false;
+
+      Serial.println("Received: ");
+      Serial.println(tmp);
+      Serial.flush();
+      
+      int cmd_id = (int) (tmp.charAt(0) - '0');
+      String params = tmp.substring(tmp.indexOf(':')+1);
+
+      Serial.print("CMD id:");Serial.println(cmd_id);
+      Serial.print("Params:");Serial.println(params);
+      Serial.flush();
+
+
+      switch(cmd_id){
+	case id_setLEDState:{
+		bool param = params.charAt(0) == '0'?false:true;
+//Serial.print("Char:");
+//Serial.print(params.chartAt);
+		setLEDState(param);
+		break;
+	}
+	case id_publishResistorValue:{
+		long param = atol(params.c_str());
+//		int param = params.toInt();
+	        Serial.print("Us:");Serial.println(param);
+
+		register_publishResitorValue(param);
+		break;
+	}
+      }
+
+
+    }
+}
+
+

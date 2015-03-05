@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project MOon with Jar-in-Jar Loader">
+    <!--this file was created by Eclipse Runnable JAR file Export Wizard-->
+    <!--ANT 1.7 is required-->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="/home/feiteira/Programming/eclipse/workspace"/>
+    <property name="dir.jarfile" value="/home/feiteira/git/moonrails-commandline/Demo/bin"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/moon.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="eu.moonrails.Moon"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ org.eclipse.cdt.core_5.9.1.201502131403.jar org.eclipse.core.runtime_3.11.1.v20150903-1804.jar org.eclipse.equinox.common_3.7.0.v20150402-1709.jar commons-io-2.4.jar"/>
+            </manifest>
+            <zipfileset src="jar-in-jar-loader.zip"/>
+            <fileset dir="${dir.buildfile}/bin"/>
+            <zipfileset dir="${dir.buildfile}/libs" includes="org.eclipse.cdt.core_5.9.1.201502131403.jar"/>
+            <zipfileset dir="${dir.buildfile}/libs" includes="org.eclipse.core.runtime_3.11.1.v20150903-1804.jar"/>
+            <zipfileset dir="${dir.buildfile}/libs" includes="org.eclipse.equinox.common_3.7.0.v20150402-1709.jar"/>
+            <zipfileset dir="${dir.buildfile}/libs" includes="commons-io-2.4.jar"/>
+        </jar>
+    </target>
+</project>
