@@ -14,13 +14,13 @@ import eu.moonrails.plugins.builtin.SingleFileArduinoPlugin;
 public class Moon {
 
 	public static void main(String[] args) throws Exception {
-		if(args.length != 2){
+		if(args.length != 1){
 			System.out.println("Number of arguments must be two.");
-			System.out.println("java -jar moon.jar <original file> <target file>");
+			System.out.println("java -jar moon.jar <original file>");
 			return;
 		}
 		String path  = args[0];	
-		System.out.println("Preparing to load file: "+path);
+		System.out.println("Preparing to load file: "+1);
 		
 		File file = new File(path);
 		File sourceFolder = file.getAbsoluteFile().getParentFile();		
