@@ -20,7 +20,7 @@ public class Moon {
 			return;
 		}
 		String path  = args[0];	
-		System.out.println("Preparing to load file: "+1);
+		System.out.println("Preparing to load file: "+path);
 		
 		File file = new File(path);
 		File sourceFolder = file.getAbsoluteFile().getParentFile();		
