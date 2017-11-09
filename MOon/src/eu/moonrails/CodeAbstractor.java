@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.cdt.core.dom.ast.ASTVisitor;
 import org.eclipse.cdt.core.dom.ast.IASTComment;
+import org.eclipse.cdt.core.dom.ast.IASTCompositeTypeSpecifier;
 import org.eclipse.cdt.core.dom.ast.IASTDeclaration;
 import org.eclipse.cdt.core.dom.ast.IASTFunctionDeclarator;
 import org.eclipse.cdt.core.dom.ast.IASTName;
@@ -21,6 +22,7 @@ import org.eclipse.cdt.core.dom.ast.IASTTranslationUnit;
 import org.eclipse.cdt.core.dom.ast.IBasicType;
 import org.eclipse.cdt.core.dom.ast.IBasicType.Kind;
 import org.eclipse.cdt.core.dom.ast.IBinding;
+import org.eclipse.cdt.core.dom.ast.ICompositeType;
 import org.eclipse.cdt.core.dom.ast.IFunction;
 import org.eclipse.cdt.core.dom.ast.IFunctionType;
 import org.eclipse.cdt.core.dom.ast.IParameter;
@@ -29,6 +31,7 @@ import org.eclipse.cdt.core.dom.ast.IType;
 import org.eclipse.cdt.core.dom.ast.gnu.cpp.GPPLanguage;
 import org.eclipse.cdt.core.index.IIndex;
 import org.eclipse.cdt.core.model.ILanguage;
+import org.eclipse.cdt.core.model.ITypeDef;
 import org.eclipse.cdt.core.parser.DefaultLogService;
 import org.eclipse.cdt.core.parser.FileContent;
 import org.eclipse.cdt.core.parser.IParserLogService;
@@ -203,25 +206,52 @@ public class CodeAbstractor extends ASTVisitor {
 					System.out.println("\t Receives:" + f);
 			}
 			IASTParameterDeclaration[] arr_params = parameters.toArray(new IASTParameterDeclaration[parameters.size()]);
-			processFunction(name, type.getReturnType(),
-					arr_params,
+			processFunction(name, type.getReturnType(), arr_params,
 					astCommenter.getLeadingCommentsForNode(declarator.getParent()));
 		} else {
-			throw new NullPointerException();
+			throw new NullPointerException("Null function type");
 		}
 	}
 
+	public IASTCompositeTypeSpecifier getCompositeSpecifier(IASTDeclaration declaration) {
+		for (IASTNode node : declaration.getChildren()) {
+			if(node instanceof IASTCompositeTypeSpecifier)
+				return (IASTCompositeTypeSpecifier) node;
+		}
+		return null;
+	}
+	
+	public void processComposite(IASTCompositeTypeSpecifier composite) {
+		IASTName name = composite.getName();
+		IBinding b = name.resolveBinding();	
+		ICompositeType ctype = (ICompositeType) b; // So far I'm assuming this will always cast
+		
+			System.out.println(ctype);
+		
+		
+		System.out.println("COMP " + name);
+		
+	}
+	
+	
 	@Override
 	public int visit(IASTDeclaration declaration) {
-		IASTFunctionDeclarator declarator = getFunctionDeclarator(declaration);
-
-		if (declarator != null) {
+		// is it a composite
+		IASTCompositeTypeSpecifier composite = getCompositeSpecifier(declaration);
+		if(composite != null) {
+			processComposite(composite);
+		}
+		
+		// Now let's check for functions
+		IASTFunctionDeclarator functionDeclarator = getFunctionDeclarator(declaration);
+		
+		if (functionDeclarator != null) {
 			for (IASTComment c : astCommenter.getLeadingCommentsForNode(declaration)) {
 				System.out.println("TRAILING: " + c.toString());
 			}
 
 			try {
-				this.processFunctionDeclarator(declarator);
+				this.processFunctionDeclarator(functionDeclarator);
 			} catch (InvalidClassException e) {
 				throw new RuntimeException(e);
 			}
@@ -229,4 +259,5 @@ public class CodeAbstractor extends ASTVisitor {
 		return PROCESS_SKIP;
 	}
 
+	
 }

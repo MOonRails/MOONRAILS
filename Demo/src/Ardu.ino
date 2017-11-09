@@ -5,6 +5,11 @@
 
 #define TEST_PIN  LED_BUILTIN
 
+struct DataSet{
+	int var1;
+	float var2;
+};
+
 void on_setup() {
 	pinMode(TEST_PIN, OUTPUT);
 }
