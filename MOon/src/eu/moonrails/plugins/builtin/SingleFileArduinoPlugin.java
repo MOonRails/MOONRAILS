@@ -14,6 +14,9 @@ import org.apache.commons.io.IOUtils;
 import eu.moonrails.MoonRailsPlugin;
 import eu.moonrails.MoonRailsPlugin.OperationVisitor;
 import eu.moonrails.abstraction.AbstractionTree;
+import eu.moonrails.abstraction.BasicType;
+import eu.moonrails.abstraction.CompositeType;
+import eu.moonrails.abstraction.DataType;
 import eu.moonrails.abstraction.Parameter;
 import eu.moonrails.abstraction.Service;
 import eu.moonrails.abstraction.ops.Operation;
@@ -202,28 +205,25 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 	private String stringForReadParam(Operation op) {
 		String ret = "";
 
-		Parameter.Type type = Parameter.Type.INT;
+		DataType type = BasicType.INT;
 		if (op.hasParameters()) {
 			if (op instanceof SimpleSend) {
-				// No parameter is provided for this operation
 				type = ((SimpleSend) op).getParameter().getType();
 			} else if (op instanceof SimpleSubscription) {
-				type = Parameter.Type.INT;
+				type = BasicType.INT;
 			} else {
 				throw new UnknownTypeException(null, op);
 			}
 
-			switch (type) {
-			case BOOLEAN:
-				ret += "		bool param = params.charAt(0) == '0'?false:true;\n";
-				break;
-			case INT:
-				ret += "		long param = atol(params.c_str());\n";
-				break;
-			case FLOAT:
-				ret += "		float param = atof(params.c_str());\n";
-				break;
+			if (type.isBasicType()) {
+				ret += OnType(BasicType.BOOLEAN, type,
+						(t) -> "		bool param = params.charAt(0) == '0'?false:true;\n");
+				ret += OnType(BasicType.INT, type, (t) -> "		long param = atol(params.c_str());\n");
+				ret += OnType(BasicType.FLOAT, type, (t) -> "		float param = atof(params.c_str());\n");
+			} else {
+				ret += readComposite((CompositeType) type);
 			}
+
 		}
 
 		if (op instanceof SimpleSend) {
@@ -240,4 +240,37 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		}
 		return ret;
 	}
+
+	private String readComposite(CompositeType type) {
+		String ret = "";
+		// declare
+		ret += "\t\t " + type.getName() + " param;\n";
+
+		int cnt = 0;
+		ret += "\t\t char *p = (char *)params.c_str();\n";
+
+		for (Parameter p : type.getParameters()) {
+			final String const_var = "str_param" + cnt;
+			ret += "\t\t\t const char * "+const_var + " = strtok_r(p, \",\", &p);//reads next field in line\n";
+
+			ret += "\t\t\t param." + p.getName() + " = ";
+			ret += OnType(BasicType.BOOLEAN, p.getType(), (t) -> " (*" + const_var + " == '0')?false:true;\n");
+			ret += OnType(BasicType.INT, p.getType(), (t) -> "	atol(" + const_var + ");\n");
+			ret += OnType(BasicType.FLOAT, p.getType(), (t) -> " atof(" + const_var + ");\n");
+			cnt++;
+		}
+
+		return ret;
+	}
+
+	public String OnType(DataType ref, DataType type, OnTypeDo task) {
+		if (ref.getName().equals(type.getName()))
+			return task.task(type);
+		return "";
+	}
+
+	public interface OnTypeDo {
+		public String task(DataType type);
+	}
+
 }

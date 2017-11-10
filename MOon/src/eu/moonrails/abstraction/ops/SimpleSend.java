@@ -30,7 +30,7 @@ public class SimpleSend extends Operation {
 	@Override
 	public String toString() {
 		String param = parameter == null ? "(no parameters)"
-				: " will send " + parameter.getName() + "\' of type " + parameter.getType().toString();
+				: " will send " + parameter.getName() + "\' of type " + parameter.getName();
 		return "SimpleSend " + name + param;
 	}
 }

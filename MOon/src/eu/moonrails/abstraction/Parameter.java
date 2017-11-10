@@ -1,19 +1,15 @@
 package eu.moonrails.abstraction;
 
-public class Parameter {
-	public enum Type {
-		BOOLEAN, INT, FLOAT
-	};
-
+public class Parameter extends MoonRailsAbstraction {
 	protected String name;
-	protected Type type;
+	protected DataType type;
 
-	public Parameter(Type type, String name) {
+	public Parameter(DataType type, String name) {
 		this(type);
 		this.name = name;
 	}	
 	
-	public Parameter(Type type) {
+	public Parameter(DataType type) {
 		this();
 		this.type = type;
 	}	
@@ -28,11 +24,11 @@ public class Parameter {
 		return name;
 	}
 
-	public Type getType() {
+	public DataType getType() {
 		return type;
 	}
 	
-	public void setType(Type type) {
+	public void setType(DataType type) {
 		this.type = type;
 	}
 
@@ -46,15 +42,15 @@ public class Parameter {
 	}
 
 	public static Parameter Int(String name) {
-		return new Parameter(Type.INT, name);
+		return new Parameter(BasicType.INT, name);
 	}
 
 	public static Parameter Boolean(String name) {
-		return new Parameter(Type.BOOLEAN, name);
+		return new Parameter(BasicType.BOOLEAN, name);
 	}
 
 	public static Parameter Float(String name) {
-		return new Parameter(Type.FLOAT, name);
+		return new Parameter(BasicType.FLOAT, name);
 	}
 
 }

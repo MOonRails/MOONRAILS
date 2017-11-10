@@ -5,16 +5,14 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import eu.moonrails.abstraction.AbstractionTree;
+import eu.moonrails.abstraction.DataType;
 import eu.moonrails.abstraction.Service;
 import eu.moonrails.abstraction.ops.Operation;
-import eu.moonrails.abstraction.ops.SimpleSubscription;
 
 public abstract class MoonRailsPlugin {
 
@@ -34,11 +32,11 @@ public abstract class MoonRailsPlugin {
 		this.abstractionTree = atree;
 		this.sourceFolder = sourceFolder;
 		this.workingFolder = new File(sourceFolder.getAbsoluteFile().getParentFile() + GENERATED_FILES_TARGET_FOLDER
-				+ sourceFolder.separator + this.getDriverId());
+				+ File.separator + this.getDriverId());
 		this.workingFolder.mkdirs();
 
 		this.templatesFolder = new File(sourceFolder.getAbsoluteFile().getParentFile() + TEMPLATES_FOLDER
-				+ sourceFolder.separator + this.getDriverId());
+				+ File.separator + this.getDriverId());
 
 		System.out.println("Driver working folder is: " + this.workingFolder.getAbsolutePath());
 	}
@@ -63,7 +61,21 @@ public abstract class MoonRailsPlugin {
 		});
 	}
 
-	
+	/**
+	 * 
+	 * Iterates through all data types in
+	 * 
+	 * @param tv
+	 */
+	public void forEachDataType(TypeVisitor tv) {
+		this.forEachService((tsev) -> {
+			for (DataType t : tsev.getDataTypes()) {
+				tv.visit(tsev, t);
+			}
+		});
+
+	}
+
 	/**
 	 * 
 	 * Iterates through all operations in a service.
@@ -71,9 +83,21 @@ public abstract class MoonRailsPlugin {
 	 * @param ov
 	 */
 	public void forEachOperation(Service tsev, OperationVisitor ov) {
-			for (Operation o : tsev.getOperations()) {
-				ov.visit(tsev, o);
-			}
+		for (Operation o : tsev.getOperations()) {
+			ov.visit(tsev, o);
+		}
+	}
+
+	/**
+	 * 
+	 * Iterates through all data types in a service.
+	 * 
+	 * @param ov
+	 */
+	public void forEachDataType(Service tsev, TypeVisitor tv) {
+		for (DataType t : tsev.getDataTypes()) {
+			tv.visit(tsev, t);
+		}
 	}
 
 	/**
@@ -166,6 +190,10 @@ public abstract class MoonRailsPlugin {
 
 	public interface OperationVisitor {
 		public void visit(Service s, Operation o);
+	}
+
+	public interface TypeVisitor {
+		public void visit(Service s, DataType dt);
 	}
 
 	public interface FileVisitor {

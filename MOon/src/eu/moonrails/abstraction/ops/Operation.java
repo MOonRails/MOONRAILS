@@ -4,25 +4,16 @@ import eu.moonrails.abstraction.MoonRailsAbstraction;
 
 public abstract class Operation extends MoonRailsAbstraction {
 	protected String name;
-	protected String comment;
 
 	public Operation(String name, String comment) {
-		super();
+		super(comment);
 		this.name = name;
-		this.comment = comment;
 	}
 
 	public Operation(String name) {
 		this(name, null);
 	}
 
-	public String getComment() {
-		return comment;
-	}
-
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
 
 	public String getName() {
 		return name;

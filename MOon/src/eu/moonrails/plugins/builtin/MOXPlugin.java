@@ -18,17 +18,23 @@ import org.w3c.dom.Element;
 
 import eu.moonrails.MoonRailsPlugin;
 import eu.moonrails.abstraction.AbstractionTree;
-import eu.moonrails.abstraction.Parameter.Type;
+import eu.moonrails.abstraction.CompositeType;
+import eu.moonrails.abstraction.Parameter;
 import eu.moonrails.abstraction.ops.Operation;
 import eu.moonrails.abstraction.ops.SimpleSend;
 import eu.moonrails.abstraction.ops.SimpleSubscription;
 
 public class MOXPlugin extends MoonRailsPlugin {
 	public static final String ID = MOXPlugin.class.getName();
+
+	public static final String AREA = "MOR";
+
 	private Document doc;
 	private File targetFile;
 	private final Element mal_specification;
 	private final HashMap<Class, IPType> interaction_patern;
+	HashMap<String, Element> servicesElement = new HashMap<>();
+	HashMap<String, Element> compositesElement = new HashMap<>();
 
 	class IPType {
 		private String type;
@@ -49,19 +55,18 @@ public class MOXPlugin extends MoonRailsPlugin {
 
 	public MOXPlugin(AbstractionTree atree, File sourceFolder) throws ParserConfigurationException {
 		super(atree, sourceFolder);
-		interaction_patern = initiateInteractionPatternTable();
+		interaction_patern = initInteractionPatternTable();
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		// root elements
 		doc = docBuilder.newDocument();
 		// Element rootElement = doc.createElement("company");
 		mal_specification = createMALSpecification();
-
 		doc.appendChild(mal_specification);
-
 	}
 
-	public HashMap<Class, IPType> initiateInteractionPatternTable() {
+	@SuppressWarnings("rawtypes")
+	public HashMap<Class, IPType> initInteractionPatternTable() {
 		HashMap<Class, IPType> ret = new HashMap<>();
 		ret.put(SimpleSend.class, new IPType("mal:send"));
 		ret.put(SimpleSubscription.class, new IPType("mal:pubsubIP", "mal:publishNotify"));
@@ -81,44 +86,56 @@ public class MOXPlugin extends MoonRailsPlugin {
 
 	private Element createMALArea(Element specification) {
 		Element area = doc.createElement("mal:area");
-		area.setAttribute("name", "MOR");
+		area.setAttribute("name", AREA);
 		area.setAttribute("number", "99");
 		area.setAttribute("version", "1");
 		specification.appendChild(area);
 
 		createOperations(area);
+		createComposites(area);
 		return area;
 	}
 
-	private void createOperations(Element area) {
-		HashMap<String, Element> services = new HashMap<>();
+	private void createComposites(Element area) {
+		forEachDataType((mor_service, mor_type) -> {
+			Element serv = getOrCreateService(mor_service.getName(), area);
+			// data type element
+			Element dte;
 
-		forEachOperation((mor_service, mor_operation) -> {
-			Element serv = services.get(mor_service.getName());
-			// create service if it does not exist
-			if (serv == null) {
-				serv = createService(area);
-				services.put(mor_service.getName(), serv);
-				serv.setAttribute("name", mor_service.getName());
-				serv.setAttribute("number", "" + services.keySet().size());
-				area.appendChild(serv);
+			if (serv.getElementsByTagName("mal:dataTypes").getLength() == 0) {
+				dte = doc.createElement("mal:dataTypes");
+				serv.appendChild(dte);
+			} else {
+				dte = (Element) serv.getElementsByTagName("dataTypes").item(0);
 			}
 
-			// Creates capability set
-			Element cs;
+			if (mor_type instanceof CompositeType) {
+				CompositeType mor_composite = (CompositeType) mor_type;
+				dte.appendChild(createComposite(mor_composite, dte.getChildNodes().getLength() + 1));
+			}
+
+			serv.appendChild(dte);
+		});
+	}
+
+	private void createOperations(Element area) {
+		forEachOperation((mor_service, mor_operation) -> {
+			Element serv = getOrCreateService(mor_service.getName(), area);
+
+			// Creates capability set element
+			Element cse;
 			// TODO: Accept multiple capability sets
 			if (serv.getElementsByTagName("mal:capabilitySet").getLength() == 0) {
-				cs = doc.createElement("mal:capabilitySet");
-				cs.setAttribute("number", "1");
-				serv.appendChild(cs);
+				cse = doc.createElement("mal:capabilitySet");
+				cse.setAttribute("number", "1");
+				serv.appendChild(cse);
 			} else {
-				cs = (Element) serv.getElementsByTagName("mal:capabilitySet").item(0);
-
+				cse = (Element) serv.getElementsByTagName("mal:capabilitySet").item(0);
 			}
-			int elements_in_capability_set = cs.getChildNodes().getLength();
+			int elements_in_capability_set = cse.getChildNodes().getLength();
 
-			cs.appendChild(createOperation(mor_operation, elements_in_capability_set + 1));
-			serv.appendChild(cs);
+			cse.appendChild(createOperation(mor_operation, elements_in_capability_set + 1));
+			serv.appendChild(cse);
 		});
 	}
 
@@ -152,28 +169,59 @@ public class MOXPlugin extends MoonRailsPlugin {
 		return op;
 	}
 
+	private Element createComposite(CompositeType mor_composite, int shortFormPart) {
+		Element comp = doc.createElement("mal:composite");
+
+		comp.setAttribute("name", mor_composite.getName());
+		comp.setAttribute("shortFormPart", shortFormPart + "");
+		comp.setAttribute("comment", mor_composite.getComment());
+
+		for (Parameter mor_parameter : mor_composite.getParameters()) {
+			Element field = doc.createElement("mal:field");
+			field.setAttribute("canBeNull", "false");// by convention this is never false
+			field.setAttribute("name", mor_parameter.getName());// by convention this is never false
+
+			Element type = createTypeFromParameter(mor_parameter);
+			field.appendChild(type);
+
+			comp.appendChild(field);
+		}
+
+		return comp;
+	}
+
 	private Element defineSimpleSend(SimpleSend mop) {
 		Element msg = doc.createElement("mal:send");
-		
+
 		// does this simple send, also send an parameter?
 		if (mop.hasParameters()) {
 			Element field = doc.createElement("mal:field");
 			field.setAttribute("name", mop.getParameter().getName());
 
-			Element type = doc.createElement("mal:type");
 			// TODO hardcoded to MAL types, composites are not supported
-			type.setAttribute("area", "MAL");
-			// TODO lists are not supported
-
-			type.setAttribute("list", "false");
-
-			type.setAttribute("name", MALTypeName(mop.getParameter().getType()));
+			Element type = createTypeFromParameter(mop.getParameter());
 
 			field.appendChild(type);
 			msg.appendChild(field);
 		}
 		return msg;
+	}
 
+
+	private Element createTypeFromParameter(Parameter p) {
+		Element type =  doc.createElement("mal:type");
+		// TODO lists are not supported
+		type.setAttribute("list", "false");
+		type.setAttribute("name", p.getType().getName());
+
+		if (p.getType().isBasicType()) {			
+			type.setAttribute("area", "MAL");
+		} else {// composite
+			type.setAttribute("area", AREA);
+			CompositeType ctype = (CompositeType) p.getType();
+			type.setAttribute("service", ctype.getService().getName());
+		}
+		return type;
 	}
 
 	private Element defineSimpleSubscription(SimpleSubscription mop) {
@@ -181,11 +229,11 @@ public class MOXPlugin extends MoonRailsPlugin {
 		Element type = doc.createElement("mal:type");
 		// TODO hardcoded to MAL types, composites are not supported
 		type.setAttribute("area", "MAL");
-		// TODO lists are not supported
 
+		// TODO lists are not supported
 		type.setAttribute("list", "false");
 
-		type.setAttribute("name", MALTypeName(mop.getSubscriptionType().getType()));
+		type.setAttribute("name", mop.getSubscriptionType().getType().getName());
 
 		msg.appendChild(type);
 		return msg;
@@ -197,6 +245,19 @@ public class MOXPlugin extends MoonRailsPlugin {
 		ret.setAttribute("xsi:type", "com:ExtendedServiceType");
 		area.appendChild(ret);
 		return ret;
+	}
+
+	private Element getOrCreateService(String name, Element area) {
+		Element serv = servicesElement.get(name);
+		// create service if it does not exist
+		if (serv == null) {
+			serv = createService(area);
+			serv.setAttribute("name", name);
+			serv.setAttribute("number", "" + (servicesElement.keySet().size() + 1));
+			area.appendChild(serv);
+			servicesElement.put(name, serv);
+		}
+		return serv;
 	}
 
 	@Override
@@ -229,18 +290,6 @@ public class MOXPlugin extends MoonRailsPlugin {
 			System.out.println("Target file set to:" + this.targetFile.getAbsolutePath());
 		}
 		return this.targetFile;
-	}
-
-	public static String MALTypeName(Type t) {
-		switch (t) {
-		case BOOLEAN:
-			return "Boolean";
-		case FLOAT:
-			return "Float";
-		case INT:
-			return "Integer";
-		}
-		return null;
 	}
 
 }

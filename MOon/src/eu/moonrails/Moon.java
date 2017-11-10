@@ -1,11 +1,6 @@
 package eu.moonrails;
 
 import java.io.File;
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.eclipse.core.runtime.CoreException;
 
 import eu.moonrails.abstraction.ops.Operation;
 import eu.moonrails.plugins.builtin.MOXPlugin;
@@ -26,7 +21,7 @@ public class Moon {
 		File sourceFolder = file.getAbsoluteFile().getParentFile();		
 		
 		CodeAbstractor loader = new CodeAbstractor(path);
-				
+					
 		
 		System.out.println("-------------------- Moon Rails Abstraction ---------------------------");
 		
