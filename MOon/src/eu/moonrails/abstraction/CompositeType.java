@@ -1,10 +1,11 @@
 package eu.moonrails.abstraction;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
 public class CompositeType extends DataType {
-	private HashMap<String, Parameter> parameters;
+	private ArrayList<Parameter> parameters;
 
 	private Service service = null;
 	
@@ -24,7 +25,7 @@ public class CompositeType extends DataType {
 		super(name);
 		this.setComment(comment);
 		this.service = service;
-		parameters = new HashMap<>();
+		parameters = new ArrayList<>();
 	}		
 
 	public void addParameter(BasicType type, String name) {
@@ -32,15 +33,11 @@ public class CompositeType extends DataType {
 	}
 	
 	public void addParameter(Parameter p) {
-		parameters.put(p.name, p);
-	}
-
-	public Parameter getParameter(String name) {
-		return parameters.get(name);
+		parameters.add( p);
 	}
 
 	public Collection<Parameter> getParameters() {
-		return parameters.values();
+		return parameters;
 	}
 
 	public Service getService() {
