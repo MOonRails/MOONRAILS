@@ -63,6 +63,13 @@ public class CodeAbstractor extends ASTVisitor {
 		case eInt:
 			mtype = BasicType.INT;
 			break;
+
+		case eChar:
+			if ((basicType.getModifiers() & IBasicType.IS_UNSIGNED) != 0) {
+				mtype = BasicType.UBYTE;
+				break;
+			}
+
 		case eBoolean:
 			mtype = BasicType.BOOLEAN;
 			break;
@@ -198,7 +205,7 @@ public class CodeAbstractor extends ASTVisitor {
 
 		System.out.println(ctype);
 
-		CompositeType comp = new CompositeType(ctype.getName(), comment,service);
+		CompositeType comp = new CompositeType(ctype.getName(), comment, service);
 
 		for (IField field : ctype.getFields()) {
 			System.out.println("\tField " + field.getName() + " :: " + field.getType());

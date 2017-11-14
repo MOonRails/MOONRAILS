@@ -37,9 +37,15 @@ void setG(bool state) {
 	digitalWrite(PIN_G, state? HIGH : LOW);
 }
 void setB(bool state) {
-
 	digitalWrite(PIN_B, state? HIGH : LOW);
 }
+
+void setGray(unsigned char gradient) {
+	analogWrite(PIN_R, gradient);
+	analogWrite(PIN_G, gradient);
+	analogWrite(PIN_B, gradient);
+}
+
 
 
 void setRGB(color c){

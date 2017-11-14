@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.util.Arrays;
 
 import javax.lang.model.type.UnknownTypeException;
@@ -219,6 +220,7 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 				ret += OnType(BasicType.BOOLEAN, type,
 						(t) -> "		bool param = params.charAt(0) == '0'?false:true;\n");
 				ret += OnType(BasicType.INT, type, (t) -> "		long param = atol(params.c_str());\n");
+				ret += OnType(BasicType.UBYTE, type, (t) -> "		unsigned char param = atoi(params.c_str());\n");				
 				ret += OnType(BasicType.FLOAT, type, (t) -> "		float param = atof(params.c_str());\n");
 			} else {
 				ret += readComposite((CompositeType) type);
@@ -256,6 +258,7 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 			ret += "\t\t\t param." + p.getName() + " = ";
 			ret += OnType(BasicType.BOOLEAN, p.getType(), (t) -> " (*" + const_var + " == '0')?false:true;\n");
 			ret += OnType(BasicType.INT, p.getType(), (t) -> "	atol(" + const_var + ");\n");
+			ret += OnType(BasicType.UBYTE, p.getType(), (t) -> "	(unsigned char) atoi(" + const_var + ");\n");
 			ret += OnType(BasicType.FLOAT, p.getType(), (t) -> " atof(" + const_var + ");\n");
 			cnt++;
 		}
@@ -269,8 +272,35 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		return "";
 	}
 
+	
 	public interface OnTypeDo {
 		public String task(DataType type);
 	}
+	
+	public String getArduinoTypeName(DataType dt) {
+		// composites go by name, easy
+		if(!dt.isBasicType())
+			return dt.getName();
+
+		BasicType basicType = (BasicType) dt;
+		switch(basicType.asEnum()) {
+		case BOOLEAN:
+			return dt.getName();
+		case FLOAT:
+			return dt.getName();
+		case UBYTE:
+			return "(unsigned char)";
+		case INT:
+			return dt.getName();
+		
+		}							
+		
+		try {
+			throw new InvalidClassException("Unsuported data type by " + this.getClass());
+		} catch (InvalidClassException e) {
+			throw new RuntimeException(e);
+		}		
+	}
+	
 
 }

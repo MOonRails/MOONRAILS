@@ -1,6 +1,7 @@
 package eu.moonrails.plugins.builtin;
 
 import java.io.File;
+import java.io.InvalidClassException;
 import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -18,7 +19,9 @@ import org.w3c.dom.Element;
 
 import eu.moonrails.MoonRailsPlugin;
 import eu.moonrails.abstraction.AbstractionTree;
+import eu.moonrails.abstraction.BasicType;
 import eu.moonrails.abstraction.CompositeType;
+import eu.moonrails.abstraction.DataType;
 import eu.moonrails.abstraction.Parameter;
 import eu.moonrails.abstraction.ops.Operation;
 import eu.moonrails.abstraction.ops.SimpleSend;
@@ -207,14 +210,13 @@ public class MOXPlugin extends MoonRailsPlugin {
 		return msg;
 	}
 
-
 	private Element createTypeFromParameter(Parameter p) {
-		Element type =  doc.createElement("mal:type");
+		Element type = doc.createElement("mal:type");
 		// TODO lists are not supported
 		type.setAttribute("list", "false");
-		type.setAttribute("name", p.getType().getName());
+		type.setAttribute("name", getMALTypeName(p.getType()));
 
-		if (p.getType().isBasicType()) {			
+		if (p.getType().isBasicType()) {
 			type.setAttribute("area", "MAL");
 		} else {// composite
 			type.setAttribute("area", AREA);
@@ -233,11 +235,35 @@ public class MOXPlugin extends MoonRailsPlugin {
 		// TODO lists are not supported
 		type.setAttribute("list", "false");
 
-		type.setAttribute("name", mop.getSubscriptionType().getType().getName());
+		type.setAttribute("name", getMALTypeName(mop.getSubscriptionType().getType()));
 
 		msg.appendChild(type);
 		return msg;
 
+	}
+
+	private String getMALTypeName(DataType dt) {
+		// composites go by name, easy
+		if (!dt.isBasicType())
+			return dt.getName();
+
+		BasicType basicType = (BasicType) dt;
+		switch (basicType.asEnum()) {
+		case BOOLEAN:
+			return dt.getName();
+		case FLOAT:
+			return dt.getName();
+		case UBYTE:
+			return "UOctet";
+		case INT:
+			return dt.getName();
+		}
+
+		try {
+			throw new InvalidClassException("Unsuported data type by " + this.getClass());
+		} catch (InvalidClassException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private Element createService(Element area) {
