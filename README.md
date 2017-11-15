@@ -1,4 +1,13 @@
 # MOonRAILS
+A platform that uses space standards, convention over configuration and code generation to automate communication across devices.
+
+# Requirements
+
+JVM (Java 1.8)
+Bash
+
+
+# Why?
 
 There are two stories from two very different programmers, both of them desperately need MOonRAILS but they don't know it.
 

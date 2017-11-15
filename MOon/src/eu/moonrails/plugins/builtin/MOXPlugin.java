@@ -17,6 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import eu.moonrails.Moon;
 import eu.moonrails.MoonRailsPlugin;
 import eu.moonrails.abstraction.AbstractionTree;
 import eu.moonrails.abstraction.BasicType;
@@ -28,9 +29,7 @@ import eu.moonrails.abstraction.ops.SimpleSend;
 import eu.moonrails.abstraction.ops.SimpleSubscription;
 
 public class MOXPlugin extends MoonRailsPlugin {
-	public static final String ID = MOXPlugin.class.getName();
-
-	public static final String AREA = "MOR";
+	public static final String ID = "MOX";
 
 	private Document doc;
 	private File targetFile;
@@ -89,7 +88,7 @@ public class MOXPlugin extends MoonRailsPlugin {
 
 	private Element createMALArea(Element specification) {
 		Element area = doc.createElement("mal:area");
-		area.setAttribute("name", AREA);
+		area.setAttribute("name", Moon.getArea());
 		area.setAttribute("number", "99");
 		area.setAttribute("version", "1");
 		specification.appendChild(area);
@@ -219,7 +218,7 @@ public class MOXPlugin extends MoonRailsPlugin {
 		if (p.getType().isBasicType()) {
 			type.setAttribute("area", "MAL");
 		} else {// composite
-			type.setAttribute("area", AREA);
+			type.setAttribute("area", Moon.getArea());
 			CompositeType ctype = (CompositeType) p.getType();
 			type.setAttribute("service", ctype.getService().getName());
 		}

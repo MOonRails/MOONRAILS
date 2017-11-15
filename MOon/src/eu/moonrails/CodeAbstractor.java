@@ -96,7 +96,8 @@ public class CodeAbstractor extends ASTVisitor {
 
 	private IASTTranslationUnit translationUnit;
 
-	public CodeAbstractor(String filePath) throws IOException, CoreException {
+	public CodeAbstractor(File file) throws IOException, CoreException {
+		String filePath = file.getAbsolutePath();
 		this.atree = new AbstractionTree();
 		// for demo purposes we have only one file and one service
 		service = atree.addService(getServiceName(filePath));
@@ -164,7 +165,7 @@ public class CodeAbstractor extends ASTVisitor {
 	}
 
 	private String getServiceName(String path) {
-		int start = path.lastIndexOf('/') + 1;
+		int start = path.lastIndexOf(File.separatorChar) + 1;
 		int end = path.lastIndexOf('.');
 		if (start < 0)
 			start = 0;

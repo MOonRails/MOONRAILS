@@ -28,34 +28,12 @@ public class Test {
 		String code = "typedef float myType; void f(int i) {}; int rint(float a, double b){}; void f(double d) {}; "
 				+ "void main() { myType var = 4; f(var); }";
 		IASTTranslationUnit translationUnit = parse(code.toCharArray());
-		translationUnit = parseFile("/home/feiteira/Programming/eclipse/workspace/HelloWorld/src/HelloWorld.c");
-		/*
-		 * for (IASTNode node : translationUnit.getOriginalNode().getChildren())
-		 * { System.out.println(node.getClass()); if (node instanceof
-		 * IASTFunctionDefinition) { IASTFunctionDefinition fd =
-		 * (IASTFunctionDefinition) node;
-		 * System.out.println(fd.getDeclarator().getRawSignature()); for
-		 * (IASTNode n2 : fd.getChildren()) { System.out.println("\tNode:: " +
-		 * n2.toString()); }
-		 * 
-		 * // System.out.println("Name: " + node.toString()); } }
-		 */
+		translationUnit = parseFile("/does-not-exist/HelloWorld.c");
+		
 		final ASTVisitor visitor = new ASTVisitor() {
 
 			@Override
 			public int visit(IASTDeclaration declaration) {
-				/*
-				 * System.out.println(declaration.getRawSignature());
-				 * 
-				 * IASTFunctionDeclarator fd = null; for(IASTNode node:
-				 * declaration.getChildren()){ System.out.println("CHILD: "+
-				 * node); if(node instanceof IASTFunctionDeclarator){ fd =
-				 * (IASTFunctionDeclarator) node; break; } }
-				 * 
-				 * System.out.println(fd); IASTName name = fd.getName();
-				 * 
-				 * this.visit(name);
-				 */
 				for (IASTComment c : astCommenter.getLeadingCommentsForNode(declaration)) {
 					System.out.println("TRAILING: " + c.toString());
 				}
@@ -147,16 +125,8 @@ public class Test {
 				return super.visit(tu);
 			}
 		};
-		// visitor.shouldVisitNames = true;
-		// visitor.shouldVisitTranslationUnit = true;
 		visitor.shouldVisitDeclarations = true;
 		translationUnit.accept(visitor);
-		/*
-		 * Map<IASTNode, List<IASTComment>> map = astCommenter.getLeadingMap();
-		 * for(IASTNode n : map.keySet()){ //+ n.getRawSignature()
-		 * System.out.println(" [ " + n.getClass().getSimpleName() + "]  :: " +
-		 * map.get(n)); }
-		 */
 	}
 
 	private static IASTTranslationUnit parse(char[] code) throws Exception {

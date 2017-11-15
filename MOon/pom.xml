@@ -1,0 +1,153 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>MOon</groupId>
+	<artifactId>MOon</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>MOonRails</name>
+	<dependencies>
+		<dependency>
+			<groupId>int.esa.ccsds.mo</groupId>
+			<artifactId>StubGenerator</artifactId>
+			<version>1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>int.esa.ccsds.mo</groupId>
+			<artifactId>StubGenerator_Lib</artifactId>
+			<version>1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>int.esa.ccsds.mo</groupId>
+			<artifactId>StubGenerator_Java</artifactId>
+			<version>1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>int.esa.ccsds.mo</groupId>
+			<artifactId>StubGenerator_Docs</artifactId>
+			<version>1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>int.esa.ccsds.mo</groupId>
+			<artifactId>StubGenerator_Interfaces</artifactId>
+			<version>1.5</version>
+		</dependency>
+		<!-- JAR files in lib folder -->
+		<dependency>
+			<groupId>commons</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/libs/commons-io-2.4.jar</systemPath>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.cdt</groupId>
+			<artifactId>org.eclipse.cdt.core</artifactId>
+			<version>5.9.1</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/org.eclipse.cdt.core_5.9.1.201502131403.jar</systemPath>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.core</groupId>
+			<artifactId>org.eclipse.core.runtime</artifactId>
+			<version>3.11.1</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/org.eclipse.core.runtime_3.11.1.v20150903-1804.jar</systemPath>
+			<type>jar</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.equinox</groupId>
+			<artifactId>org.eclipse.equinox.common</artifactId>
+			<version>3.7.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/org.eclipse.equinox.common_3.7.0.v20150402-1709.jar</systemPath>
+			<type>jar</type>
+		</dependency>
+	</dependencies>
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.7.0</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+
+
+
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.2</version>
+				<executions>
+					<execution>
+						<id>copy-resources-deployment</id>
+						<!-- here the phase you need -->
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/Deployment</outputDirectory>
+							<resources>
+								<resource>
+									<directory>resources/Deployment</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-resources-dependency-jars</id>
+						<!-- here the phase you need -->
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/Deployment/.moon/dependencies</outputDirectory>
+							<resources>
+								<resource>
+									<directory>libs</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>eu.moonrails.Moon</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<finalName>Deployment/.moon/${project.artifactId}</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+</project>

@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+export CLASSPATH=".moon/*;.moon/dependencies/*"
+
+exec java eu.moonrails.Moon $@
+

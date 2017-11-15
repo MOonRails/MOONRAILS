@@ -26,7 +26,7 @@ import eu.moonrails.abstraction.ops.SimpleSubscription;
 
 public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 
-	public static final String ID = SingleFileArduinoPlugin.class.getName();
+	public static final String ID = "Arduino";
 
 	public static final int OUTPUT_COMMENT_MAX_COLUMNS = 80;
 
@@ -128,7 +128,7 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 	public String getDriverId() {
 		return ID;
 	}
-
+	
 	private void appendTemplate(String templateName) throws IOException {
 		this.appendCenteredComment("Start of Template: " + templateName);
 		this.appendString(this.getTemplateAsString(templateName));
@@ -157,6 +157,7 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		if (this.targetFile == null) {
 			String folderPath = this.getWorkingFolder().getAbsolutePath() + File.separator
 					+ this.getAbstractionTree().getServices().get(0).getName();
+
 			// create the sketch folder
 			File folder = new File(folderPath);
 			folder.mkdir();
@@ -220,7 +221,7 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 				ret += OnType(BasicType.BOOLEAN, type,
 						(t) -> "		bool param = params.charAt(0) == '0'?false:true;\n");
 				ret += OnType(BasicType.INT, type, (t) -> "		long param = atol(params.c_str());\n");
-				ret += OnType(BasicType.UBYTE, type, (t) -> "		unsigned char param = atoi(params.c_str());\n");				
+				ret += OnType(BasicType.UBYTE, type, (t) -> "		unsigned char param = atoi(params.c_str());\n");
 				ret += OnType(BasicType.FLOAT, type, (t) -> "		float param = atof(params.c_str());\n");
 			} else {
 				ret += readComposite((CompositeType) type);
@@ -253,7 +254,7 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 
 		for (Parameter p : type.getParameters()) {
 			final String const_var = "str_param" + cnt;
-			ret += "\t\t\t const char * "+const_var + " = strtok_r(p, \",\", &p);//reads next field in line\n";
+			ret += "\t\t\t const char * " + const_var + " = strtok_r(p, \",\", &p);//reads next field in line\n";
 
 			ret += "\t\t\t param." + p.getName() + " = ";
 			ret += OnType(BasicType.BOOLEAN, p.getType(), (t) -> " (*" + const_var + " == '0')?false:true;\n");
@@ -272,18 +273,17 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		return "";
 	}
 
-	
 	public interface OnTypeDo {
 		public String task(DataType type);
 	}
-	
+
 	public String getArduinoTypeName(DataType dt) {
 		// composites go by name, easy
-		if(!dt.isBasicType())
+		if (!dt.isBasicType())
 			return dt.getName();
 
 		BasicType basicType = (BasicType) dt;
-		switch(basicType.asEnum()) {
+		switch (basicType.asEnum()) {
 		case BOOLEAN:
 			return dt.getName();
 		case FLOAT:
@@ -292,15 +292,14 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 			return "(unsigned char)";
 		case INT:
 			return dt.getName();
-		
-		}							
-		
+
+		}
+
 		try {
 			throw new InvalidClassException("Unsuported data type by " + this.getClass());
 		} catch (InvalidClassException e) {
 			throw new RuntimeException(e);
-		}		
+		}
 	}
-	
 
 }

@@ -21,25 +21,25 @@ void on_setup() {
 	pinMode(PIN_R, OUTPUT);
 	pinMode(PIN_G, OUTPUT);
 	pinMode(PIN_B, OUTPUT);
-
 }
 
-//asas
-void setLEDOff() {
-	digitalWrite(TEST_PIN, false);
-}
-
-void setR(bool state) {
+// Sets Red to full
+void setRed(bool state) {
 	digitalWrite(PIN_R, state? HIGH : LOW);
 }
 
-void setG(bool state) {
+// Sets Green to full
+void setGreen(bool state) {
 	digitalWrite(PIN_G, state? HIGH : LOW);
 }
-void setB(bool state) {
+
+// Sets Blue to full
+void setBlue(bool state) {
 	digitalWrite(PIN_B, state? HIGH : LOW);
 }
 
+
+// 0 to  255 value for all channels (RGB)
 void setGray(unsigned char gradient) {
 	analogWrite(PIN_R, gradient);
 	analogWrite(PIN_G, gradient);
@@ -47,7 +47,7 @@ void setGray(unsigned char gradient) {
 }
 
 
-
+// set's any RGB (0 up to 255)
 void setRGB(color c){
 	analogWrite(PIN_R, c.r);
 	analogWrite(PIN_G, c.g);
@@ -55,7 +55,7 @@ void setRGB(color c){
 }
 
 //This will set the state of the LED to On (true) or Off(false)
-void setLEDStateA(bool state) {
+void setTestLED(bool state) {
 	digitalWrite(TEST_PIN, state ? 1 : 0);
 }
 
@@ -74,4 +74,5 @@ float publishResistorValue() {
 	  }
 	  return 0;
 }
+
 

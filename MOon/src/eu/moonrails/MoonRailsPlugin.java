@@ -18,11 +18,14 @@ public abstract class MoonRailsPlugin {
 
 	public static final String GENERATED_FILES_TARGET_FOLDER = File.separator + "gen";
 	public static final String TEMPLATES_FOLDER = File.separator + "templates";
+	public static final String RESOURCES_FOLDER = File.separator + ".moon";
+	public static final String PLUGINS_FOLDER = File.separator + "plugins";
 
 	private AbstractionTree abstractionTree;
 	private File workingFolder;
 	private File sourceFolder;
 	private File templatesFolder;
+	private File pluginFolder;
 
 	public abstract String getDriverId();
 
@@ -35,8 +38,12 @@ public abstract class MoonRailsPlugin {
 				+ File.separator + this.getDriverId());
 		this.workingFolder.mkdirs();
 
-		this.templatesFolder = new File(sourceFolder.getAbsoluteFile().getParentFile() + TEMPLATES_FOLDER
+		this.pluginFolder = new File(sourceFolder.getAbsoluteFile().getParentFile().getParentFile().getParentFile()
+				+ RESOURCES_FOLDER
+				+ PLUGINS_FOLDER
 				+ File.separator + this.getDriverId());
+
+		this.templatesFolder = new File(pluginFolder.getAbsolutePath() + TEMPLATES_FOLDER);
 
 		System.out.println("Driver working folder is: " + this.workingFolder.getAbsolutePath());
 	}
