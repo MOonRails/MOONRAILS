@@ -1,6 +1,12 @@
 # MOonRAILS
 A platform that uses space standards, convention over configuration and code generation to automate communication across devices.
 
+# After build
+`mvn install`
+Go to target/Deployment
+and type
+`./moon Example`
+
 # Requirements
 
 JVM (Java 1.8)
