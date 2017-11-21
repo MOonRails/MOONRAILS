@@ -30,17 +30,20 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 
 	public static final int OUTPUT_COMMENT_MAX_COLUMNS = 80;
 
-	public static final String[] METHOD_SKIP_LIST = { "on_setup" };
-
 	private File sourceFile;
 	private File targetFile;
 	private FileOutputStream outputStream;
 
+	private Operation onLoopOp = null;
 	public SingleFileArduinoPlugin(AbstractionTree atree, File workingFolder) {
 		super(atree, workingFolder);
 		this.sourceFile = this.getSourceFile();
 		System.out.println("Source file set to: " + this.sourceFile.getAbsolutePath());
 
+		forEachOperation((s,o)->{
+				if(o.getName().equals("on_loop"))
+						onLoopOp = o;
+				});
 	}
 
 	@Override
@@ -66,11 +69,11 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 	}
 
 	private void appendIds() throws IOException {
-		int id_counter = 0;
+		int id_counter = 1;
 		appendCenteredComment("Appending ids");
 		for (Operation op : this.getAbstractionTree().getServices().get(0).getOperations()) {
 			// skip if it's in the skip list
-			if (skip(op))
+			if (!op.isPublic())
 				continue;
 
 			appendString("const int id_" + op.getName() + " = " + id_counter + ";");
@@ -82,7 +85,7 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		appendCenteredComment("Appending Pub Sub specific");
 		for (Operation op : this.getAbstractionTree().getServices().get(0).getOperations()) {
 			// skip if it's in the skip list
-			if (skip(op))
+			if (!op.isPublic())
 				continue;
 
 			if (op instanceof SimpleSubscription) {
@@ -128,7 +131,7 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 	public String getDriverId() {
 		return ID;
 	}
-	
+
 	private void appendTemplate(String templateName) throws IOException {
 		this.appendCenteredComment("Start of Template: " + templateName);
 		this.appendString(this.getTemplateAsString(templateName));
@@ -182,7 +185,7 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		String tmp = "";
 		for (Operation op : this.getAbstractionTree().getServices().get(0).getOperations()) {
 			// skip if it's in the skip list
-			if (skip(op))
+			if (!op.isPublic())
 				continue;
 			tmp += "      case id_" + op.getName() + ":{\n";
 			tmp += stringForReadParam(op);
@@ -190,19 +193,28 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		}
 
 		data = data.replace("%CASE%", tmp);
-		appendString(data);
+		
+		if(onLoopOp != null) {
+			appendCenteredComment("Custom on_loop added here");
+			data = data.replace("%ON_LOOP%", "\t\ton_loop();");
+		}else {
+			data = data.replace("%ON_LOOP%", "\t\t// no on_loop() provided");
+		}
+		appendString(data);	
+
 	}
 
 	public void forEachExternalOperation(Service tsev, OperationVisitor ov) {
 		forEachOperation(tsev, (s, o) -> {
-			if (!Arrays.asList(METHOD_SKIP_LIST).contains(o.getName()))
+			// if (!Arrays.asList(METHOD_SKIP_LIST).contains(o.getName()))
+			if (o.isPublic())
 				ov.visit(s, o);
 		});
 	}
 
-	private boolean skip(Operation o) {
-		return Arrays.asList(METHOD_SKIP_LIST).contains(o.getName());
-	}
+	// private boolean skip(Operation o) {
+	// return Arrays.asList(METHOD_SKIP_LIST).contains(o.getName());
+	// }
 
 	private String stringForReadParam(Operation op) {
 		String ret = "";

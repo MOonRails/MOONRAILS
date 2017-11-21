@@ -4,14 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Properties;
 
 import eu.moonrails.abstraction.ops.Operation;
 import eu.moonrails.plugins.builtin.MOXPlugin;
 import eu.moonrails.plugins.builtin.SingleFileArduinoPlugin;
 
 public class Moon {
-	public static final String INI_FILENAME = "moonrails.ini";
+	public static final String INI_FILENAME = 	"moonrails.ini";
 
 	public static final String SUPPORTED_EXTENTIONS[] = { ".ino", ".c", ".cpp", ".C" };
 
@@ -23,8 +22,8 @@ public class Moon {
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 1) {
-			System.out.println("Number of arguments must be two.");
-			System.out.println("java -jar moon.jar <Project>");
+			System.out.println("Number of arguments must one.");
+			System.out.println("./moon <Project>");
 			return;
 		}
 
@@ -123,6 +122,5 @@ public class Moon {
 
 	public static String getArea() {
 		return System.getProperty(Conventions.AREA_PROP, Conventions.AREA);
-	}
-
+	}	
 }

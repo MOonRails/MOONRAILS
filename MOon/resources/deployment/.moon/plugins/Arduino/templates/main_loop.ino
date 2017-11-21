@@ -21,7 +21,7 @@ void loop()
       switch(cmd_id){
 %CASE%
       }
-
+%ON_LOOP%
 
     }
 }

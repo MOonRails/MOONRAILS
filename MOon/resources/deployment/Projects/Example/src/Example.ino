@@ -23,6 +23,10 @@ void on_setup() {
 	pinMode(PIN_B, OUTPUT);
 }
 
+void on_loop(){
+	//does nothing for the moment
+}
+
 // Sets Red to full
 void setRed(bool state) {
 	digitalWrite(PIN_R, state? HIGH : LOW);

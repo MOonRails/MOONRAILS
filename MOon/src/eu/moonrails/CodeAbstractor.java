@@ -46,8 +46,10 @@ import eu.moonrails.abstraction.AbstractionTree;
 import eu.moonrails.abstraction.BasicType;
 import eu.moonrails.abstraction.CompositeType;
 import eu.moonrails.abstraction.DataType;
+import eu.moonrails.abstraction.MoonRailsAbstraction;
 import eu.moonrails.abstraction.Parameter;
 import eu.moonrails.abstraction.Service;
+import eu.moonrails.abstraction.ops.Operation;
 import eu.moonrails.abstraction.ops.SimpleSend;
 import eu.moonrails.abstraction.ops.SimpleSubscription;
 
@@ -223,20 +225,29 @@ public class CodeAbstractor extends ASTVisitor {
 		String name = iastName.toString();
 		String comment = list.size() > 0 ? list.get(0).toString() : "TODO: No comment provided";
 
+		Operation newOp = null;
+
 		// its a simple send
 		if (isVoid(returnType) && parameters.length < 2) {
 			Parameter param = null;
 			if (parameters.length > 0) {
 				param = convertFromIASTParameterDeclaration(parameters[0]);
 			}
-			service.addOperation(new SimpleSend(iastName.toString(), param)).setComment(comment);
+			newOp = new SimpleSend(iastName.toString(), param);
+			service.addOperation(newOp).setComment(comment);
 		} else
 		// its a simple pub-sub
 		if (name.startsWith("publish") && !isVoid(returnType) && parameters.length == 0) {
-			service.addOperation(
-					new SimpleSubscription(iastName.toString(), createParameterFromType(returnType), comment));
+			newOp = new SimpleSubscription(iastName.toString(), createParameterFromType(returnType), comment);
+			service.addOperation(newOp);
 		} else {
 			System.out.println("Skipping method: " + name);
+		}
+		
+		if(newOp != null) {
+			// sets the Operation's specific properties from the properties file
+			setOperationProperties(
+					service.getName()+"."+newOp.getName() + "."	, newOp);
 		}
 	}
 
@@ -294,6 +305,20 @@ public class CodeAbstractor extends ASTVisitor {
 			throw new RuntimeException(e);
 		}
 		return PROCESS_SKIP;
+	}
+
+	/**
+	 * ads only those matching the prefix
+	 * the prefix is removed before adding
+	 * */
+	public void setOperationProperties(String prefix, MoonRailsAbstraction abs) {
+		for (Object key : System.getProperties().keySet()) {
+			String skey = key.toString();
+			if (skey.startsWith(prefix)) {
+				skey = skey.substring(prefix.length());
+				abs.setProperty(skey, System.getProperty(key.toString()));
+			}
+		}
 	}
 
 }

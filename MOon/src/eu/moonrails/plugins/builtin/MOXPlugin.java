@@ -122,22 +122,24 @@ public class MOXPlugin extends MoonRailsPlugin {
 
 	private void createOperations(Element area) {
 		forEachOperation((mor_service, mor_operation) -> {
-			Element serv = getOrCreateService(mor_service.getName(), area);
+			if (mor_operation.isPublic()) {
+				Element serv = getOrCreateService(mor_service.getName(), area);
 
-			// Creates capability set element
-			Element cse;
-			// TODO: Accept multiple capability sets
-			if (serv.getElementsByTagName("mal:capabilitySet").getLength() == 0) {
-				cse = doc.createElement("mal:capabilitySet");
-				cse.setAttribute("number", "1");
+				// Creates capability set element
+				Element cse;
+				// TODO: Accept multiple capability sets
+				if (serv.getElementsByTagName("mal:capabilitySet").getLength() == 0) {
+					cse = doc.createElement("mal:capabilitySet");
+					cse.setAttribute("number", "1");
+					serv.appendChild(cse);
+				} else {
+					cse = (Element) serv.getElementsByTagName("mal:capabilitySet").item(0);
+				}
+				int elements_in_capability_set = cse.getChildNodes().getLength();
+
+				cse.appendChild(createOperation(mor_operation, elements_in_capability_set + 1));
 				serv.appendChild(cse);
-			} else {
-				cse = (Element) serv.getElementsByTagName("mal:capabilitySet").item(0);
 			}
-			int elements_in_capability_set = cse.getChildNodes().getLength();
-
-			cse.appendChild(createOperation(mor_operation, elements_in_capability_set + 1));
-			serv.appendChild(cse);
 		});
 	}
 

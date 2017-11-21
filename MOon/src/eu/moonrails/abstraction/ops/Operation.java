@@ -36,4 +36,8 @@ public abstract class Operation extends MoonRailsAbstraction {
 	public interface DoTask {
 		public void task(Operation o);
 	}
+	
+	public boolean isPublic() {
+		return this.getProperty("public","true").equals("true");
+	}
 }
