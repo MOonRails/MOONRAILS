@@ -3,6 +3,7 @@ A platform that uses space standards, convention over configuration and code gen
 
 # After build
 `mvn install`
+=======
 Go to target/Deployment
 and type
 `./moon Example`

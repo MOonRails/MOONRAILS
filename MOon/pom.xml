@@ -57,7 +57,6 @@
 			<systemPath>${project.basedir}/libs/org.eclipse.core.runtime_3.11.1.v20150903-1804.jar</systemPath>
 			<type>jar</type>
 		</dependency>
-
 		<dependency>
 			<groupId>org.eclipse.equinox</groupId>
 			<artifactId>org.eclipse.equinox.common</artifactId>
@@ -79,9 +78,6 @@
 				</configuration>
 			</plugin>
 
-
-
-
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.0.2</version>
@@ -94,10 +90,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/target/Deployment</outputDirectory>
+							<outputDirectory>${basedir}/target</outputDirectory>
 							<resources>
 								<resource>
-									<directory>resources/Deployment</directory>
+									<directory>resources/deployment</directory>
 								</resource>
 							</resources>
 						</configuration>
@@ -110,7 +106,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/target/Deployment/.moon/dependencies</outputDirectory>
+							<outputDirectory>${basedir}/target/.moon/dependencies</outputDirectory>
 							<resources>
 								<resource>
 									<directory>libs</directory>
@@ -120,8 +116,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
@@ -134,7 +128,7 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
-					<finalName>Deployment/.moon/${project.artifactId}</finalName>
+					<finalName>.moon/${project.artifactId}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 				<executions>
@@ -147,6 +141,49 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.5</version>
+				<executions>
+					<execution>
+						<id>auto-clean</id>
+						<phase>install</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+						<configuration>
+							<excludeDefaultDirectories>true</excludeDefaultDirectories>
+							<filesets>
+								<fileset>
+									<directory>${basedir}/target/generated-sources</directory>
+								</fileset>
+								<fileset>
+									<directory>${basedir}/target/archive-tmp</directory>
+								</fileset>
+								<fileset>
+									<directory>${basedir}/target/maven-archiver</directory>
+								</fileset>
+								<fileset>
+									<directory>${basedir}/target/test-classes</directory>
+								</fileset>
+								<fileset>
+									<directory>${basedir}/target/maven-status</directory>
+								</fileset>
+								<fileset>
+									<directory>${basedir}/target</directory>
+
+									<includes>
+										<include>*SNAPSHOT.jar</include>
+									</includes>
+								</fileset>
+
+							</filesets>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 
 		</plugins>
 	</build>
