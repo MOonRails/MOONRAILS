@@ -1,5 +1,10 @@
-#!/usr/bin/bash
-export CLASSPATH=".moon/*;.moon/dependencies/*"
+#!/usr/bin/env bash
+
+if [ "${OSTYPE}" == "msys" ] ||  [ "${OSTYPE}" == "cygwin" ] ; then 
+	export CLASSPATH=".moon/*;.moon/dependencies/*"
+else
+	export CLASSPATH=".moon/*:.moon/dependencies/*"
+fi
 
 exec java eu.moonrails.Moon $@
 

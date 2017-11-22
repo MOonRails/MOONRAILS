@@ -23,10 +23,6 @@ void on_setup() {
 	pinMode(PIN_B, OUTPUT);
 }
 
-void on_loop(){
-	//does nothing for the moment
-}
-
 // Sets Red to full
 void setRed(bool state) {
 	digitalWrite(PIN_R, state? HIGH : LOW);
@@ -79,4 +75,16 @@ float publishResistorValue() {
 	  return 0;
 }
 
+
+//this will publish the value of the resistor
+int publishResistorValue2() {
+	  int analogPin = 0;
+	  int raw = 0;
+	  float Voutfraction;
+
+	  raw = analogRead(analogPin);
+
+
+	  return raw;
+}
 

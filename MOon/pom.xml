@@ -168,6 +168,9 @@
 									<directory>${basedir}/target/test-classes</directory>
 								</fileset>
 								<fileset>
+									<directory>${basedir}/target/classes</directory>
+								</fileset>								
+								<fileset>
 									<directory>${basedir}/target/maven-status</directory>
 								</fileset>
 								<fileset>
@@ -176,6 +179,10 @@
 										<include>*SNAPSHOT.jar</include>
 									</includes>
 								</fileset>
+								<fileset>
+									<directory>${basedir}/target/classes</directory>
+								</fileset>								
+
 							</filesets>
 						</configuration>
 					</execution>
