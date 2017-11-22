@@ -75,16 +75,3 @@ float publishResistorValue() {
 	  return 0;
 }
 
-
-//this will publish the value of the resistor
-int publishResistorValue2() {
-	  int analogPin = 0;
-	  int raw = 0;
-	  float Voutfraction;
-
-	  raw = analogRead(analogPin);
-
-
-	  return raw;
-}
-
