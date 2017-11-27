@@ -75,3 +75,12 @@ float publishResistorValue() {
 	  return 0;
 }
 
+float publishResistorValue2() {
+	  int analogPin = 0;
+	  int raw = 0;
+	  float Voutfraction;
+
+	  return analogRead(analogPin);
+
+
+}

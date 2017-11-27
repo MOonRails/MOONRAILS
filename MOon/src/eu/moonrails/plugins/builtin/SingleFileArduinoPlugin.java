@@ -35,15 +35,16 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 	private FileOutputStream outputStream;
 
 	private Operation onLoopOp = null;
+
 	public SingleFileArduinoPlugin(AbstractionTree atree, File workingFolder) {
 		super(atree, workingFolder);
 		this.sourceFile = this.getSourceFile();
 		System.out.println("Source file set to: " + this.sourceFile.getAbsolutePath());
 
-		forEachOperation((s,o)->{
-				if(o.getName().equals("on_loop"))
-						onLoopOp = o;
-				});
+		forEachOperation((s, o) -> {
+			if (o.getName().equals("on_loop"))
+				onLoopOp = o;
+		});
 	}
 
 	@Override
@@ -63,13 +64,11 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		appendPubSubCode();
 		handleMainLoop();
 		outputStream.close();
-
-		// copies the Arduino makefile from template
-		copyTemplateToWorkspace("Makefile");
 	}
 
 	private void appendIds() throws IOException {
 		int id_counter = 1;
+		String pubsub_enabled_vars = "";
 		appendCenteredComment("Appending ids");
 		for (Operation op : this.getAbstractionTree().getServices().get(0).getOperations()) {
 			// skip if it's in the skip list
@@ -77,20 +76,38 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 				continue;
 
 			appendString("const int id_" + op.getName() + " = " + id_counter + ";");
+			if (op instanceof SimpleSubscription) {
+				pubsub_enabled_vars += ("bool pubsub_enabled_" + op.getName() + " = false;\n");
+			}
+
 			id_counter++;
 		}
+		appendComment("Pubsub specific");
+		appendString(pubsub_enabled_vars);
 	}
 
 	private void appendPubSubCode() throws IOException {
 		appendCenteredComment("Appending Pub Sub specific");
+		String checks = "";
+		String templ = getTemplateAsString("pubsub.ino");
 		for (Operation op : this.getAbstractionTree().getServices().get(0).getOperations()) {
 			// skip if it's in the skip list
 			if (!op.isPublic())
 				continue;
 
 			if (op instanceof SimpleSubscription) {
-				handleSimpleSubscription((SimpleSubscription) op);
+				// handleSimpleSubscription((SimpleSubscription) op);
+				checks += "\tif(pubsub_enabled_" + op.getName() + "){\n";
+				checks += "\t\t float val =  " + op.getName() + "();\n";
+				checks += "\t\t Serial.print(id_" + op.getName() + ");\n";
+				checks += "\t\t Serial.print(\":\");\n";
+				checks += "\t\t Serial.println(val);\n";
+				checks += "\t}\n";
 			}
+		}
+		if (checks != "") {
+			templ = templ.replaceAll("%CHECKS%", checks);
+			appendString(templ);
 		}
 		appendCenteredComment("Done Appending Pub Sub specific");
 	}
@@ -171,13 +188,14 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		return this.targetFile;
 	}
 
-	private void handleSimpleSubscription(SimpleSubscription op) throws IOException {
-		appendCenteredComment("Start PubSub " + op.getName());
-		String data = getTemplateAsString("pubsub.ino");
-		data = data.replaceAll("%OP%", op.getName());
-		appendString(data);
-		appendCenteredComment("End PubSub " + op.getName());
-	}
+	// private void handleSimpleSubscription(SimpleSubscription op) throws
+	// IOException {
+	// appendCenteredComment("Start PubSub " + op.getName());
+	// String data = getTemplateAsString("pubsub.ino");
+	// data = data.replaceAll("%OP%", op.getName());
+	// appendString(data);
+	// appendCenteredComment("End PubSub " + op.getName());
+	// }
 
 	private void handleMainLoop() throws IOException {
 		String data = getTemplateAsString("main_loop.ino");
@@ -193,14 +211,14 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 		}
 
 		data = data.replace("%CASE%", tmp);
-		
-		if(onLoopOp != null) {
+
+		if (onLoopOp != null) {
 			appendCenteredComment("Custom on_loop added here");
 			data = data.replace("%ON_LOOP%", "\t\ton_loop();");
-		}else {
+		} else {
 			data = data.replace("%ON_LOOP%", "\t\t// no on_loop() provided");
 		}
-		appendString(data);	
+		appendString(data);
 
 	}
 
@@ -232,9 +250,12 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 			if (type.isBasicType()) {
 				ret += OnType(BasicType.BOOLEAN, type,
 						(t) -> "		bool param = params.charAt(0) == '0'?false:true;\n");
-				ret += OnType(BasicType.INT, type, (t) -> "		long param = atol(params.c_str());\n");
-				ret += OnType(BasicType.UBYTE, type, (t) -> "		unsigned char param = atoi(params.c_str());\n");
-				ret += OnType(BasicType.FLOAT, type, (t) -> "		float param = atof(params.c_str());\n");
+				ret += OnType(BasicType.INT, type,
+						(t) -> "		long param = atol(params.c_str());\n");
+				ret += OnType(BasicType.UBYTE, type,
+						(t) -> "		unsigned char param = atoi(params.c_str());\n");
+				ret += OnType(BasicType.FLOAT, type,
+						(t) -> "		float param = atof(params.c_str());\n");
 			} else {
 				ret += readComposite((CompositeType) type);
 			}
@@ -250,8 +271,9 @@ public class SingleFileArduinoPlugin extends MoonRailsPlugin {
 			}
 
 		} else if (op instanceof SimpleSubscription) {
-			ret += "		long param = atol(params.c_str());\n";
-			ret += "		register_" + op.getName() + "(param);\n";
+			// ret += " long param = atol(params.c_str());\n";
+			// ret += " register_" + op.getName() + "(param);\n";
+			ret += "		pubsub_enabled_" + op.getName() + " = params.charAt(0) == '0'?false:true;\n";
 		}
 		return ret;
 	}
